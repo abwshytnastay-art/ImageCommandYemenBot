@@ -1,0 +1,19 @@
+services:
+  - type: worker
+    name: image-command-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_USER_ID
+        sync: false
+      - key: ADMIN_PIN
+        sync: false
+      - key: REPLICATE_API_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.1-flash-image
