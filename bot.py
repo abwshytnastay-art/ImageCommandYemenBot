@@ -1,4 +1,6 @@
 import os, io, asyncio, logging
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from threading import Thread
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 import requests
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputFile
@@ -460,7 +462,23 @@ async def gemini_generate(prompt: str) -> bytes:
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     log.exception("Unhandled error", exc_info=context.error)
 
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(b"ImageCommandYemenBot is running")
+    def log_message(self, format, *args):
+        return
+
+def start_web_server():
+    port = int(os.getenv("PORT", "10000"))
+    server = HTTPServer(("0.0.0.0", port), HealthHandler)
+    print(f"Health server listening on port {port}")
+    server.serve_forever()
+
 def run():
+    Thread(target=start_web_server, daemon=True).start()
     if not BOT_TOKEN:
         raise SystemExit("BOT_TOKEN is missing")
     app = Application.builder().token(BOT_TOKEN).build()
